@@ -69,3 +69,30 @@
   - Committed entire scaffold as "Phase 1: full project scaffold"
 - Files committed: all EmergencyAlert2/ source and config files
 - Next step: Add real Firebase credentials in .env, run the app, verify it boots
+
+## [Session 6]
+- Date: Tuesday, June 2, 2026
+- Agent: Cursor
+- Task: Created .env template
+- Actions taken:
+  - Created EmergencyAlert2/.env (empty template)
+  - Verified .env is in .gitignore (line 34 of EmergencyAlert2/.gitignore)
+- Next step: Fill .env with real Firebase credentials
+
+## [Session 7]
+- Date: Tuesday, June 2, 2026
+- Agent: Cursor
+- Task: Fix Firebase/Hermes compatibility
+- Actions taken:
+  - Updated babel.config.js with three private-property plugins:
+    @babel/plugin-proposal-private-methods,
+    @babel/plugin-proposal-class-properties,
+    @babel/plugin-proposal-private-property-in-object
+  - Installed missing babel plugins via npm (--legacy-peer-deps)
+  - Killed stale Expo process on port 8081
+  - Cleared Metro cache and restarted: npx expo start --clear
+  - Metro Bundler started successfully on http://localhost:8081
+  - No SyntaxError on startup — fix confirmed working
+  - Note: minor version-mismatch warnings exist for babel-preset-expo,
+    @types/react, typescript (non-blocking, cleanup in future session)
+- Next step: Verify app loads correctly on device
