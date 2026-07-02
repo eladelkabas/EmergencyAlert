@@ -1,0 +1,37 @@
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export default function AdminScreen() {
+  return (
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.container}>
+        <Text style={styles.title}>ניהול משתמשים</Text>
+        <Text style={styles.subtitle}>מסך זה יושלם בשלב הבא</Text>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  container: {
+    flex: 1,
+    padding: 24,
+    direction: 'rtl',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'right',
+    color: '#1a1a1a',
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: 'right',
+    color: '#666',
+    marginTop: 8,
+  },
+});
