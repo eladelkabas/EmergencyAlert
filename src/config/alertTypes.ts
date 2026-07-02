@@ -1,34 +1,46 @@
-export const ALERT_LEVELS = {
+import type { AlertLevel, TeamId } from '../types';
+
+export const ALERT_LEVELS: Record<
+  AlertLevel,
+  { id: AlertLevel; label: string; color: string; priority: 'normal' | 'high' | 'max' }
+> = {
   green: {
-    id: 'green' as const,
+    id: 'green',
     label: 'ירוק - עדכון כללי',
     color: '#4CAF50',
-    priority: 'normal' as const,
+    priority: 'normal',
   },
   orange: {
-    id: 'orange' as const,
+    id: 'orange',
     label: 'כתום - אירוע פעיל',
     color: '#FF9800',
-    priority: 'high' as const,
+    priority: 'high',
   },
   red: {
-    id: 'red' as const,
+    id: 'red',
     label: 'אדום - חירום',
     color: '#F44336',
-    priority: 'max' as const,
+    priority: 'max',
   },
 };
 
-export const TEAMS = {
+export const TEAMS: Record<
+  Exclude<TeamId, 'all'>,
+  { id: Exclude<TeamId, 'all'>; label: string }
+> = {
   team1: {
-    id: 'team1' as const,
+    id: 'team1',
     label: 'צוות הסתערבות',
   },
   team2: {
-    id: 'team2' as const,
+    id: 'team2',
     label: 'כיתת כוננות',
   },
 };
 
-export type AlertLevelId = keyof typeof ALERT_LEVELS;
-export type TeamId = keyof typeof TEAMS;
+export const TEAM_ALL_LABEL = 'כל הצוותים';
+
+export function teamLabel(teamId: TeamId): string {
+  if (teamId === 'all') return TEAM_ALL_LABEL;
+  return TEAMS[teamId]?.label ?? teamId;
+}

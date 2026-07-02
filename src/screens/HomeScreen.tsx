@@ -1,37 +1,56 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TEAMS } from '../config/alertTypes';
+import { useRouter } from 'expo-router';
+import { teamLabel } from '../config/alertTypes';
 import { useAuth } from '../context/AuthContext';
+import { HE } from '../i18n/he';
+import type { UserRole } from '../types';
 
-const ROLE_LABELS: Record<string, string> = {
-  super_admin: 'מנהל על',
-  manager: 'מנהל',
-  member: 'חבר צוות',
-};
+function canSend(role: UserRole): boolean {
+  return role === 'super_admin' || role === 'manager';
+}
 
-function teamLabel(teamId: string): string {
-  if (teamId === 'all') {
-    return 'כל הצוותים';
-  }
-  const team = TEAMS[teamId as keyof typeof TEAMS];
-  return team?.label ?? teamId;
+function isAdmin(role: UserRole): boolean {
+  return role === 'super_admin';
 }
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const router = useRouter();
+
+  if (!user) return null;
 
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Text style={styles.title}>ברוך הבא</Text>
-        {user && (
-          <View style={styles.info}>
-            <Text style={styles.label}>
-              תפקיד: {ROLE_LABELS[user.role] ?? user.role}
-            </Text>
-            <Text style={styles.label}>צוות: {teamLabel(user.teamId)}</Text>
-          </View>
-        )}
+        <Text style={styles.title}>{HE.app.welcome}</Text>
+        <View style={styles.info}>
+          <Text style={styles.label}>
+            {HE.home.role}: {HE.roles[user.role]}
+          </Text>
+          <Text style={styles.label}>
+            {HE.home.team}: {teamLabel(user.teamId)}
+          </Text>
+        </View>
+
+        <View style={styles.buttons}>
+          {canSend(user.role) && (
+            <Pressable
+              style={[styles.button, styles.primary]}
+              onPress={() => router.push('/alert')}
+            >
+              <Text style={styles.buttonText}>{HE.home.sendAlert}</Text>
+            </Pressable>
+          )}
+          <Pressable style={styles.button} onPress={() => router.push('/history')}>
+            <Text style={styles.buttonText}>{HE.home.history}</Text>
+          </Pressable>
+          {isAdmin(user.role) && (
+            <Pressable style={styles.button} onPress={() => router.push('/admin')}>
+              <Text style={styles.buttonText}>{HE.home.admin}</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -56,10 +75,28 @@ const styles = StyleSheet.create({
   },
   info: {
     gap: 8,
+    marginBottom: 32,
   },
   label: {
     fontSize: 18,
     textAlign: 'right',
     color: '#333',
+  },
+  buttons: {
+    gap: 12,
+  },
+  button: {
+    backgroundColor: '#455A64',
+    padding: 18,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  primary: {
+    backgroundColor: '#F44336',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
   },
 });

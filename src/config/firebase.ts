@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import {
-  initializeAuth,
-  getAuth,
-  getReactNativePersistence,
-} from 'firebase/auth';
+// Metro resolves firebase/auth to the RN build, which exports
+// getReactNativePersistence — but the shipped .d.ts only ships the web surface.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error runtime export exists on the RN entry
+import { initializeAuth, getAuth, getReactNativePersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {

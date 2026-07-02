@@ -96,3 +96,88 @@
   - Note: minor version-mismatch warnings exist for babel-preset-expo,
     @types/react, typescript (non-blocking, cleanup in future session)
 - Next step: Verify app loads correctly on device
+
+## [Session 8]
+- Date: Thursday, July 2, 2026
+- Agent: Claude (Opus 4.7)
+- Task: Consolidate repo + build Phase 2 features autonomously
+
+- Actions taken:
+  - Consolidated repo: removed empty EmergencyAlert/ and duplicate
+    EmergencyAlert3/ mockup, flattened EmergencyAlert2/ contents to
+    repo root. Cleaned iCloud "* 2.*" duplicate files and added
+    them to .gitignore.
+  - Rebased local main onto origin/main (which had PR #2 merged),
+    pushed main, deleted stale remote branches `one` and
+    `cursor/emergencyalert3-hebrew-ui`. Repo now has a single
+    `main` branch, local and remote in sync.
+  - Reconciled type definitions: TeamId lives in src/types/index.ts
+    ('team1' | 'team2' | 'all'); src/config/alertTypes.ts imports
+    from types and re-exports typed maps + a teamLabel() helper.
+  - Created src/services/firestore.ts with typed CRUD helpers:
+    getUser, joinWithInviteCode (transactional), sendAlert,
+    acknowledgeAlert, listenToAlerts, generateInviteCode,
+    listInviteCodes, listUsers, updateUserRole, updateUserTeam,
+    updateUserFcmToken.
+  - Extracted all Hebrew strings to src/i18n/he.ts (single source
+    of truth for app/join/alert/history/admin/liveAlert/errors).
+  - JoinScreen: wired to joinWithInviteCode. Validates input,
+    calls refreshUser on success, shows error dialogs on failure.
+  - HomeScreen: role-based navigation hub. Send-alert button for
+    super_admin/manager, history for all, admin panel for
+    super_admin. Uses expo-router push.
+  - AlertScreen: 3 severity buttons (red/orange/green), team
+    selector (team1/team2/all), optional message, confirm dialog,
+    sends via sendAlert(), navigates back on success.
+  - HistoryScreen: live Firestore listener via listenToAlerts,
+    filters by user's team + 'all'. List with color-coded level
+    stripe, sender team, message, ack button.
+  - AdminScreen (super_admin gated): generate invite codes with
+    role+team selectors, list codes with used/available status,
+    list users with cycle-role and cycle-team buttons.
+  - Added app/alert.tsx, app/history.tsx, app/admin.tsx route
+    entries for expo-router.
+  - Created src/services/notifications.ts: notification handler,
+    Android channels (red = MAX importance + bypass DND, orange =
+    HIGH, green = DEFAULT), permission request (allowCriticalAlerts
+    on iOS), Expo push token retrieval.
+  - Added src/context/NotificationSetup.tsx to wire notification
+    permission + FCM token save to user doc on login. Mounted in
+    app/_layout.tsx.
+  - Added src/components/LiveAlertOverlay.tsx: subscribes to
+    alerts, on new red/orange for user's team shows full-screen
+    color-coded modal with vibration (looping for red). Ack
+    dismisses modal and writes acknowledgedBy.
+  - Fixed firebase RN persistence import: metro resolves
+    getReactNativePersistence from firebase/auth at runtime, but
+    the shipped .d.ts only ships the web surface; added
+    @ts-expect-error on the import to keep tsc clean.
+  - Bumped typescript to ~5.6.0 to satisfy expo's tsconfig.base
+    (module=preserve requires TS 5.4+). Removed accidental
+    duplicate @types/{istanbul-reports,yargs} " 2" folders.
+  - `npx tsc --noEmit` passes clean (exit 0) on the entire tree.
+
+- Files created:
+  - src/services/firestore.ts
+  - src/services/notifications.ts
+  - src/context/NotificationSetup.tsx
+  - src/components/LiveAlertOverlay.tsx
+  - src/i18n/he.ts
+  - app/alert.tsx, app/history.tsx, app/admin.tsx
+
+- Files updated:
+  - src/config/alertTypes.ts (typed to canonical TeamId)
+  - src/config/firebase.ts (RN persistence import)
+  - src/screens/{JoinScreen,HomeScreen,AlertScreen,HistoryScreen,
+    AdminScreen}.tsx (full implementations)
+  - app/_layout.tsx (mounted NotificationSetup + LiveAlertOverlay)
+
+- Next step: fill EmergencyAlert/.env with real Firebase
+  credentials, seed an initial super-admin invite code in
+  Firestore console, launch on a physical device, verify:
+    1. Anonymous auth + join flow with a valid invite code
+    2. HomeScreen renders role-based buttons
+    3. Sending a red alert triggers full-screen overlay on
+       another device in the same team
+    4. Push notification arrives when app is backgrounded
+    5. Ack button writes acknowledgedBy and dismisses vibration
