@@ -82,4 +82,23 @@ on both Android and iOS.
 - iOS: Requires Apple Critical Alerts entitlement
 
 ## Current Status
-Project just initialized. No code written yet.
+Phase 2 complete — full app flow implemented and pushed to `main`:
+- Anonymous auth + invite-code join (transactional, code marked used).
+- Role-based navigation (send / history / admin).
+- Alert sending with severity + team target + confirm dialog.
+- Live Firestore listener + in-app full-screen overlay with vibration
+  for red/orange alerts, ack writes to `acknowledgedBy`.
+- Admin panel: generate invite codes, cycle user role/team.
+- Firestore rules deployed as `firestore.rules` (role-based, self-lock
+  on role/team fields, ack-append rule).
+- Cloud Function `onAlertCreated` fanning out Expo Push notifications
+  with `channelId` + critical alert for red.
+- CI (tsc for app + functions) via GitHub Actions.
+
+Pending before production:
+- Fill `.env` with real Firebase credentials on device.
+- Seed first `super_admin` invite code (via console or scripts/seed.ts).
+- Deploy rules + functions.
+- Apple Critical Alerts entitlement (requires Apple approval).
+- Custom siren sound file (currently `default`).
+- Server-side re-push for unacknowledged red alerts.

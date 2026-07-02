@@ -1,15 +1,21 @@
 {
   "expo": {
-    "name": "EmergencyAlert2",
-    "slug": "EmergencyAlert2",
+    "name": "EmergencyAlert",
+    "slug": "EmergencyAlert",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "scheme": "emergencyalert2",
+    "scheme": "emergencyalert",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.emergencyalert2.app"
+      "bundleIdentifier": "com.emergencyalert.app",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      },
+      "entitlements": {
+        "com.apple.developer.usernotifications.critical-alerts": true
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,12 +24,27 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.emergencyalert2.app"
+      "package": "com.emergencyalert.app",
+      "useNextNotificationsApi": true,
+      "permissions": [
+        "VIBRATE",
+        "WAKE_LOCK",
+        "RECEIVE_BOOT_COMPLETED"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-router"]
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "color": "#F44336",
+          "defaultChannel": "alerts-red"
+        }
+      ]
+    ]
   }
 }
