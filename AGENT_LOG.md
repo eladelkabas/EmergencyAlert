@@ -262,3 +262,26 @@
   - npx expo start, run on device, complete join flow
   - Send a red alert to team1 from a second device and verify
     LiveAlertOverlay + system push both fire
+
+## [Session 10]
+- Date: Thursday, July 2, 2026
+- Agent: Claude (Opus 4.7)
+- Task: Phase 4 — polish
+
+- Actions taken:
+  - HistoryScreen: added acknowledgment count per alert card.
+  - .github/workflows/ci.yml: two jobs (app tsc + functions tsc) on
+    PR + main push, node 20, npm cache.
+  - src/components/HomeBanner.tsx: subscribes to alerts, shows a
+    color-coded banner at the top of HomeScreen when the current
+    user has an unacknowledged red/orange alert. Tap → /history.
+  - tsc still clean.
+
+- Files created:
+  - .github/workflows/ci.yml
+  - src/components/HomeBanner.tsx
+
+- Files updated:
+  - src/screens/HistoryScreen.tsx (ack counter)
+  - src/screens/HomeScreen.tsx (banner mount)
+  - src/i18n/he.ts (ackCount + homeBanner strings)

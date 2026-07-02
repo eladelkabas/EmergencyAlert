@@ -7,6 +7,7 @@ import { auth } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
 import { HE } from '../i18n/he';
 import type { UserRole } from '../types';
+import { HomeBanner } from '../components/HomeBanner';
 
 function canSend(role: UserRole): boolean {
   return role === 'super_admin' || role === 'manager';
@@ -26,6 +27,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <Text style={styles.title}>{HE.app.welcome}</Text>
+        <HomeBanner />
         <View style={styles.info}>
           <Text style={styles.label}>
             {HE.home.role}: {HE.roles[user.role]}

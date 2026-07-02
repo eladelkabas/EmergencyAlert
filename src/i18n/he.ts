@@ -50,6 +50,10 @@ export const HE = {
     acked: 'אושר',
     sentBy: 'נשלח על ידי',
     at: 'ב-',
+    ackCount: 'אישרו',
+  },
+  homeBanner: {
+    latestPending: 'התרעה פעילה — טרם אישרת',
   },
   admin: {
     title: 'ניהול מערכת',

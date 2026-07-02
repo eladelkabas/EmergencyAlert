@@ -61,6 +61,9 @@ export default function HistoryScreen() {
                   {HE.home.team}: {teamLabel(item.teamTarget)}
                 </Text>
                 {item.message ? <Text style={styles.message}>{item.message}</Text> : null}
+                <Text style={styles.ackCount}>
+                  {HE.history.ackCount}: {item.acknowledgedBy.length}
+                </Text>
                 <Pressable
                   style={[styles.ackBtn, acked && styles.ackedBtn]}
                   onPress={() => ack(item.id)}
@@ -96,6 +99,7 @@ const styles = StyleSheet.create({
   time: { fontSize: 13, color: '#666' },
   target: { fontSize: 14, color: '#555', marginTop: 4, textAlign: 'right' },
   message: { fontSize: 15, color: '#222', marginTop: 6, textAlign: 'right' },
+  ackCount: { fontSize: 13, color: '#666', marginTop: 6, textAlign: 'right' },
   ackBtn: {
     marginTop: 10,
     backgroundColor: '#2196F3',
