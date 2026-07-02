@@ -43,3 +43,7 @@ yarn-error.*
 # iCloud duplicate files
 * 2.*
 * 2
+
+# service account keys
+*service-account*.json
+scripts/service-account.json

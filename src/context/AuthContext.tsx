@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import { onAuthStateChanged, signInAnonymously, User as FirebaseUser } from 'firebase/auth';
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { auth, db, isFirebaseConfigured } from '../config/firebase';
 import type { User } from '../types';
 
 interface AuthContextValue {
@@ -60,6 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadUserProfile]);
 
   useEffect(() => {
+    if (!isFirebaseConfigured) {
+      setLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setLoading(true);
       try {

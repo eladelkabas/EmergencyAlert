@@ -16,13 +16,33 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const REQUIRED_KEYS = [
+  'apiKey',
+  'authDomain',
+  'projectId',
+  'appId',
+] as const;
 
-export const auth =
-  getApps().length > 0
+export const missingFirebaseConfig: string[] = REQUIRED_KEYS.filter(
+  (k) => !firebaseConfig[k],
+);
+
+export const isFirebaseConfigured = missingFirebaseConfig.length === 0;
+
+export const app = isFirebaseConfigured
+  ? getApps().length > 0
+    ? getApp()
+    : initializeApp(firebaseConfig)
+  : null;
+
+export const auth = app
+  ? getApps().length > 1
     ? getAuth(app)
     : initializeAuth(app, {
         persistence: getReactNativePersistence(AsyncStorage),
-      });
+      })
+  : (null as unknown as ReturnType<typeof getAuth>);
 
-export const db = getFirestore(app);
+export const db = app
+  ? getFirestore(app)
+  : (null as unknown as ReturnType<typeof getFirestore>);

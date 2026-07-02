@@ -17,11 +17,17 @@ import { joinWithInviteCode } from '../services/firestore';
 
 export default function JoinScreen() {
   const [inviteCode, setInviteCode] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { refreshUser } = useAuth();
 
   async function handleJoin() {
     const code = inviteCode.trim();
+    const name = displayName.trim();
+    if (!name) {
+      RNAlert.alert(HE.join.title, HE.join.emptyName);
+      return;
+    }
     if (!code) {
       RNAlert.alert(HE.join.title, HE.join.empty);
       return;
@@ -33,7 +39,7 @@ export default function JoinScreen() {
     }
     setSubmitting(true);
     try {
-      await joinWithInviteCode(uid, code);
+      await joinWithInviteCode(uid, code, name);
       await refreshUser();
     } catch (e) {
       const message = e instanceof Error ? e.message : HE.errors.generic;
@@ -50,6 +56,16 @@ export default function JoinScreen() {
         style={styles.container}
       >
         <Text style={styles.title}>{HE.join.title}</Text>
+        <TextInput
+          style={styles.input}
+          value={displayName}
+          onChangeText={setDisplayName}
+          placeholder={HE.join.namePlaceholder}
+          placeholderTextColor="#999"
+          textAlign="right"
+          autoCorrect={false}
+          editable={!submitting}
+        />
         <TextInput
           style={styles.input}
           value={inviteCode}

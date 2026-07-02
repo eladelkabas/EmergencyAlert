@@ -1,7 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert as RNAlert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { signOut } from 'firebase/auth';
 import { teamLabel } from '../config/alertTypes';
+import { auth } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
 import { HE } from '../i18n/he';
 import type { UserRole } from '../types';
@@ -50,6 +52,23 @@ export default function HomeScreen() {
               <Text style={styles.buttonText}>{HE.home.admin}</Text>
             </Pressable>
           )}
+          <Pressable
+            style={[styles.button, styles.logout]}
+            onPress={() => {
+              RNAlert.alert(HE.home.logout, HE.home.logoutConfirm, [
+                { text: HE.alert.cancel, style: 'cancel' },
+                {
+                  text: HE.home.logout,
+                  style: 'destructive',
+                  onPress: () => {
+                    signOut(auth).catch((e) => console.error(e));
+                  },
+                },
+              ]);
+            }}
+          >
+            <Text style={styles.buttonText}>{HE.home.logout}</Text>
+          </Pressable>
         </View>
       </View>
     </SafeAreaView>
@@ -93,6 +112,10 @@ const styles = StyleSheet.create({
   },
   primary: {
     backgroundColor: '#F44336',
+  },
+  logout: {
+    backgroundColor: '#9E9E9E',
+    marginTop: 24,
   },
   buttonText: {
     color: '#fff',

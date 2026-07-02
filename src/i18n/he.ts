@@ -16,14 +16,17 @@ export const HE = {
     history: 'היסטוריית התרעות',
     admin: 'ניהול מערכת',
     logout: 'התנתק',
+    logoutConfirm: 'האם להתנתק?',
   },
   join: {
     title: 'הכנס קוד הזמנה',
     placeholder: 'קוד הזמנה',
+    namePlaceholder: 'שם מלא',
     submit: 'הצטרף',
     joining: 'מצטרף...',
     invalidCode: 'קוד לא תקין',
     empty: 'יש להזין קוד',
+    emptyName: 'יש להזין שם',
   },
   alert: {
     title: 'שלח התרעה',

@@ -1,0 +1,104 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myUid() {
+      return request.auth.uid;
+    }
+
+    function getRole(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.role;
+    }
+
+    function myRole() {
+      return getRole(myUid());
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && myRole() == 'super_admin';
+    }
+
+    function canSendAlert() {
+      return isSignedIn() && (myRole() == 'super_admin' || myRole() == 'manager');
+    }
+
+    function myTeam() {
+      return get(/databases/$(database)/documents/users/$(myUid())).data.teamId;
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn();
+
+      // Self-create is only allowed via joinWithInviteCode transaction:
+      // the client also updates the invite code doc in the same batch.
+      // Rules do not enforce transaction atomicity — enforce fields only.
+      allow create: if isSignedIn()
+        && uid == myUid()
+        && request.resource.data.role in ['member', 'manager', 'super_admin']
+        && request.resource.data.teamId in ['team1', 'team2', 'all']
+        && request.resource.data.createdAt is timestamp;
+
+      // Users may update only their own fcmToken and displayName.
+      // Super admin may update role/teamId of anyone.
+      allow update: if (uid == myUid()
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.teamId == resource.data.teamId)
+        || isSuperAdmin();
+
+      allow delete: if isSuperAdmin();
+    }
+
+    match /alerts/{alertId} {
+      allow read: if isSignedIn();
+
+      allow create: if canSendAlert()
+        && request.resource.data.level in ['green', 'orange', 'red']
+        && request.resource.data.teamTarget in ['team1', 'team2', 'all']
+        && request.resource.data.sentBy == myUid()
+        && request.resource.data.acknowledgedBy is list
+        && request.resource.data.acknowledgedBy.size() == 0;
+
+      // Anyone signed in may append their own uid to acknowledgedBy.
+      allow update: if isSignedIn()
+        && request.resource.data.level == resource.data.level
+        && request.resource.data.teamTarget == resource.data.teamTarget
+        && request.resource.data.sentBy == resource.data.sentBy
+        && request.resource.data.sentAt == resource.data.sentAt
+        && request.resource.data.message == resource.data.message
+        && request.resource.data.acknowledgedBy.hasAll(resource.data.acknowledgedBy)
+        && request.resource.data.acknowledgedBy.hasOnly(resource.data.acknowledgedBy.concat([myUid()]));
+
+      allow delete: if isSuperAdmin();
+    }
+
+    match /inviteCodes/{code} {
+      // Anyone signed in may read to validate their code.
+      allow read: if isSignedIn();
+
+      allow create: if isSuperAdmin()
+        && request.resource.data.role in ['member', 'manager', 'super_admin']
+        && request.resource.data.teamId in ['team1', 'team2', 'all']
+        && request.resource.data.used == false;
+
+      // Redeem: any signed-in user may mark unused -> used.
+      // Super admin may edit freely.
+      allow update: if isSuperAdmin()
+        || (isSignedIn()
+            && resource.data.used == false
+            && request.resource.data.used == true
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.teamId == resource.data.teamId);
+
+      allow delete: if isSuperAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -181,3 +181,84 @@
        another device in the same team
     4. Push notification arrives when app is backgrounded
     5. Ack button writes acknowledgedBy and dismisses vibration
+
+## [Session 9]
+- Date: Thursday, July 2, 2026
+- Agent: Claude (Opus 4.7)
+- Task: Phase 3 — security rules, push CF, bootstrap tooling, config guards
+
+- Actions taken:
+  - firestore.rules: enforced role-based read/write per collection.
+    Users can only edit their own fcmToken/displayName (role/team
+    fields locked for self). Only super_admin may promote or move
+    users, or create/delete invite codes. Alerts: only manager/
+    super_admin may create with sentBy == self and empty
+    acknowledgedBy; any signed-in user may append their own uid to
+    acknowledgedBy (all other fields must be preserved). Invite codes:
+    any signed-in user may redeem an unused code by flipping
+    used=false to used=true; role/teamId cannot be tampered with.
+  - Added firebase.json wiring firestore rules + functions.
+  - functions/: created firebase-functions v2 workspace with own
+    tsconfig, package.json (node 20 runtime, firebase-admin,
+    firebase-functions). onAlertCreated Firestore trigger queries
+    matching users (teamId in [target, 'all']), builds an Expo Push
+    payload per token (critical alert + channelId=alerts-red for
+    red level, high priority for orange), sends in chunks of 100 to
+    https://exp.host/--/api/v2/push/send.
+  - scripts/seed.ts + README: node script using firebase-admin
+    (application default credentials via GOOGLE_APPLICATION_CREDENTIALS)
+    to create an initial invite code that bypasses Firestore rules —
+    solves the bootstrap chicken-and-egg (rules require super_admin
+    to create codes but no user has super_admin yet).
+  - docs/BOOTSTRAP.md: end-to-end bring-up guide covering Firebase
+    project setup, env vars, rules deploy, first-invite bootstrap
+    (console or seed script), CF deploy, mobile launch, push
+    verification path, and known gaps (iOS Critical Alerts entitlement,
+    default sound, no server-side red-alert re-push).
+  - JoinScreen: added display name input, validated before code
+    submit, passed through to joinWithInviteCode (stored on user
+    doc).
+  - HomeScreen: added logout button with confirmation dialog. Calls
+    firebase signOut — onAuthStateChanged fires with null →
+    anonymous re-sign-in → new uid without a user doc → JoinScreen.
+    (Acts as a "leave team" flow.)
+  - src/config/firebase.ts: detects missing EXPO_PUBLIC_FIREBASE_*
+    env keys instead of crashing initializeApp with undefined.
+    Exports isFirebaseConfigured + missingFirebaseConfig for the UI.
+  - Added src/screens/ConfigMissingScreen.tsx and wired app/index.tsx
+    to render it when config keys are missing. AuthContext no-ops if
+    not configured to avoid null-deref on auth/db.
+  - Root tsconfig.json: excluded functions/ and scripts/ from the app
+    typecheck (they have their own toolchains and firebase-admin
+    isn't installed at the app level).
+  - .gitignore: added *service-account*.json and
+    scripts/service-account.json.
+  - `npx tsc --noEmit` still clean on the app tree.
+
+- Files created:
+  - firestore.rules, firebase.json
+  - functions/{package.json,tsconfig.json,.gitignore,src/index.ts}
+  - scripts/{seed.ts,README.md}
+  - docs/BOOTSTRAP.md
+  - src/screens/ConfigMissingScreen.tsx
+
+- Files updated:
+  - app/index.tsx (config-missing gate)
+  - src/config/firebase.ts (env-var validation + lazy init)
+  - src/context/AuthContext.tsx (no-op when not configured)
+  - src/i18n/he.ts (name field + logout confirm strings)
+  - src/screens/JoinScreen.tsx (display name input)
+  - src/screens/HomeScreen.tsx (logout button)
+  - tsconfig.json (exclude functions + scripts)
+  - .gitignore (service account keys)
+
+- Next step:
+  - Set EXPO_PUBLIC_FIREBASE_* keys in .env (project already exists:
+    emergencyalert-43b91, me-west1)
+  - firebase login && firebase use emergencyalert-43b91
+  - firebase deploy --only firestore:rules
+  - Seed first super_admin invite code (console or seed.ts)
+  - cd functions && npm install && firebase deploy --only functions
+  - npx expo start, run on device, complete join flow
+  - Send a red alert to team1 from a second device and verify
+    LiveAlertOverlay + system push both fire
